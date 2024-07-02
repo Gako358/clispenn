@@ -43,6 +43,10 @@ class FinanceApp:
         income_df = self.df[self.df["type"] == "income"]
         expense_df = self.df[self.df["type"] == "expense"]
 
+        total_income = income_df["amount"].sum()
+        total_expense = expense_df["amount"].sum()
+
+        remaining_balance = total_income - total_expense
         income_grouped = (
             income_df.groupby("from")["amount"].sum().sort_values(ascending=False)
         )
@@ -70,9 +74,23 @@ class FinanceApp:
         plt.axis("off")
         plt.table(
             cellText=expense_df[["date", "from", "amount"]].values,
-            colLabels=["date", "from", "amount"],
+            colLabels=["date", "til", "amount"],
             cellLoc="center",
             loc="center",
+        )
+
+        summary_df = pd.DataFrame(
+            {
+                "Total Income": [total_income],
+                "Total Expenses": [total_expense],
+                "Remaining Balance": [remaining_balance],
+            }
+        )
+        plt.table(
+            cellText=summary_df.values,
+            colLabels=summary_df.columns,
+            cellLoc="center",
+            loc="bottom",
         )
 
         plt.tight_layout()
@@ -103,8 +121,8 @@ if __name__ == "__main__":
 
     app = FinanceApp()
     if args.command == "income":
-        app.add_income(args.date, args.from_, args.amount)
+        app.add_income(args.amount, args.date, args.from_)
     elif args.command == "expense":
-        app.add_expense(args.date, args.from_, args.amount)
+        app.add_expense(args.amount, args.date, args.from_)
     elif args.command == "show":
         app.show_expenses(args.month, args.year)
